@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'https://github.com/Harish1am/public-jenkins-docker.git' 
+        GIT_REPO = 'https://github.com/Harish1am/git-jenkin-test.git' 
         DOCKER_IMAGE = 'flask-app:latest' 
         CONTAINER_PORT = '5002'
     }
