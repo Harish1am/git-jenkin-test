@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-docker
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts-jdk11
+        ports:
+        - containerPort: 8080          
+        - containerPort: 50000 
+        - containerPort: 5002
+        env:
+        - name: JAVA_OPTS
+          value: "-Djenkins.install.runSetupWizard=false" 
+        securityContext:
+          privileged: true
+          runAsUser: 0                      
+        command: ["bash", "-c"]
+        args:
+        - |
+          mkdir -p /var/lib/apt/lists/partial && \
+          chmod -R 755 /var/lib/apt/lists && \
+          apt-get update && \
+          apt-get install -y docker.io && \
+          service docker start && \
+          exec java -jar /usr/share/jenkins/jenkins.war
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  labels:
+    app: jenkins
+spec:
+  selector:
+    app: jenkins
+  ports:
+    - name: ui-port          
+      port: 8080            
+      targetPort: 8080      
+      protocol: TCP
+    - name: agent-port       
+      port: 50000           
+      targetPort: 50000     
+      protocol: TCP
+    - name: flask-app
+      port: 5002
+      targetPort: 5002
+      protocol: TCP
+  type: NodePort 
